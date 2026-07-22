@@ -1,0 +1,32 @@
+# dependencies
+node_modules
+
+# build
+dist
+coverage
+
+# env
+.env
+.env.*
+!.env.example
+
+# prisma
+prisma/generated
+
+# local database files (SQLite paths are resolved from prisma/schema.prisma)
+prisma/*.db
+prisma/*.db-*
+
+# yarn
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/sdks
+!.yarn/versions
+
+# logs
+*.log
+
+# OS
+.DS_Store
