@@ -11,7 +11,7 @@ export const metadata: Metadata = {
   description: 'Внутренняя панель зарегистрированных пользователей.',
 };
 
-async function AdminContent() {
+async function AdminContent({ token }: { token: string }) {
   await connection();
   const data = await getAdminUsers();
 
@@ -20,6 +20,7 @@ async function AdminContent() {
       items={data.items}
       total={data.total}
       generatedAt={data.generatedAt}
+      routeToken={token}
     />
   );
 }
@@ -35,7 +36,7 @@ export default async function AdminPage({
 
   return (
     <Suspense fallback={<AdminLoading />}>
-      <AdminContent />
+      <AdminContent token={token} />
     </Suspense>
   );
 }

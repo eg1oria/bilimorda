@@ -1,6 +1,6 @@
 import { getImageProps } from "next/image";
 
-export default function Brand({ homeLabel }: { homeLabel: string }) {
+export default function Brand({ homeLabel, href = '#top' }: { homeLabel: string; href?: string }) {
   const common = {
     alt: "",
   };
@@ -24,7 +24,7 @@ export default function Brand({ homeLabel }: { homeLabel: string }) {
   });
 
   return (
-    <a href="#top" aria-label={homeLabel}>
+    <a href={href} aria-label={homeLabel}>
       <picture>
         <source media="(min-width: 521px)" srcSet={desktopSrcSet} />
         <source media="(max-width: 520px)" srcSet={mobileSrcSet} />

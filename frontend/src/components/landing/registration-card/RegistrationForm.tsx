@@ -9,8 +9,13 @@ import {
   UserRound,
 } from 'lucide-react';
 import { type FormEvent, useState } from 'react';
+import { useParams, useRouter } from 'next/navigation';
 import type { Dictionary } from '@/i18n/dictionaries';
 import { formatPhone } from '@/lib/formatPhone';
+import {
+  clearStoredQuestionnaireResult,
+  saveAttemptToken,
+} from '@/lib/questionnaire-storage';
 import GradeSelector, { type Grade } from './GradeSelector';
 import TextField from './TextField';
 
@@ -24,6 +29,9 @@ export default function RegistrationForm({
   const [submitted, setSubmitted] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [unavailable, setUnavailable] = useState(false);
+  const router = useRouter();
+  const params = useParams<{ lang: string }>();
 
   function normalizeText(value: FormDataEntryValue | null) {
     return String(value ?? '').trim().replace(/\s+/g, ' ');
@@ -40,6 +48,11 @@ export default function RegistrationForm({
       phone,
     };
 
+    if (phone.replace(/\D/g, '').length !== 11) {
+      setError(content.phoneFormatError);
+      return;
+    }
+
     setIsSubmitting(true);
     setError(null);
 
@@ -49,10 +62,20 @@ export default function RegistrationForm({
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(profile),
       });
-      const result = (await response.json()) as { userId?: unknown };
+      const result = (await response.json()) as {
+        userId?: unknown;
+        testAvailable?: unknown;
+        attemptToken?: unknown;
+      };
 
       if (!response.ok || typeof result.userId !== 'string' || !result.userId) {
         throw new Error('Registration request failed');
+      }
+
+      if (result.testAvailable !== true || typeof result.attemptToken !== 'string') {
+        setUnavailable(true);
+        setSubmitted(true);
+        return;
       }
 
       try {
@@ -61,9 +84,14 @@ export default function RegistrationForm({
           JSON.stringify({ ...profile, userId: result.userId }),
         );
       } catch {
-        // A browser may block storage; the server-side registration still succeeded.
+        // The profile copy is optional; the attempt token can use localStorage.
+      }
+      clearStoredQuestionnaireResult();
+      if (!saveAttemptToken(result.attemptToken)) {
+        throw new Error('Browser storage is unavailable');
       }
       setSubmitted(true);
+      router.push(`/${params.lang === 'kk' ? 'kk' : 'ru'}/test`);
     } catch {
       setError(content.error);
     } finally {
@@ -74,6 +102,7 @@ export default function RegistrationForm({
   function resetSuccess() {
     if (submitted) setSubmitted(false);
     if (error) setError(null);
+    if (unavailable) setUnavailable(false);
   }
 
   return (
@@ -81,6 +110,7 @@ export default function RegistrationForm({
       className="mt-7 max-[520px]:mt-6"
       onSubmit={handleSubmit}
       onChange={resetSuccess}
+      suppressHydrationWarning
       aria-busy={isSubmitting}>
       <TextField
         label={content.fullNameLabel}
@@ -115,11 +145,9 @@ export default function RegistrationForm({
         placeholder={content.phonePlaceholder}
         autoComplete="tel"
         inputMode="tel"
+        enterKeyHint="done"
         value={phone}
         onChange={(event) => setPhone(formatPhone(event.target.value))}
-        pattern="\+7 \(\d{3}\) \d{3}-\d{2}-\d{2}"
-        minLength={18}
-        maxLength={18}
         required
       />
 
@@ -155,6 +183,11 @@ export default function RegistrationForm({
       {error ? (
         <p className="mt-[15px] mb-0 text-[11px] leading-[1.45] font-semibold text-[#b34242]" role="alert">
           {error}
+        </p>
+      ) : null}
+      {unavailable ? (
+        <p className="mt-[15px] mb-0 text-[11px] leading-[1.45] font-semibold text-[#8b623c]" role="status">
+          {content.unavailable}
         </p>
       ) : null}
     </form>

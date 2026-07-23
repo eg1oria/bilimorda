@@ -3,6 +3,7 @@
 import { useRouter } from 'next/navigation';
 import {
   Download,
+  Eye,
   GraduationCap,
   Phone,
   RefreshCw,
@@ -11,12 +12,16 @@ import {
   UsersRound,
 } from 'lucide-react';
 import { useMemo, useState, useTransition } from 'react';
-import type { AdminUser } from '@/lib/admin-types';
+import { ADMIN_STATUS_LABELS } from '@/data/questionnaire';
+import type { AdminUser, AdminUserDetails } from '@/lib/admin-types';
+import AdminNav from './AdminNav';
+import UserDetailsDrawer from './UserDetailsDrawer';
 
 type AdminDashboardProps = {
   items: AdminUser[];
   total: number;
   generatedAt: string;
+  routeToken: string;
 };
 
 const dateFormatter = new Intl.DateTimeFormat('ru-RU', {
@@ -76,10 +81,14 @@ function GradeBadge({ grade }: { grade: AdminUser['grade'] }) {
   );
 }
 
-export default function AdminDashboard({ items, total, generatedAt }: AdminDashboardProps) {
+export default function AdminDashboard({ items, total, generatedAt, routeToken }: AdminDashboardProps) {
   const router = useRouter();
   const [query, setQuery] = useState('');
   const [isRefreshing, startRefresh] = useTransition();
+  const [selectedUser, setSelectedUser] = useState<AdminUser | null>(null);
+  const [userDetails, setUserDetails] = useState<AdminUserDetails | null>(null);
+  const [detailsLoading, setDetailsLoading] = useState(false);
+  const [detailsError, setDetailsError] = useState<string | null>(null);
   const grade10 = items.filter((user) => user.grade === '10').length;
   const grade11 = items.filter((user) => user.grade === '11').length;
   const filteredItems = useMemo(() => {
@@ -97,17 +106,38 @@ export default function AdminDashboard({ items, total, generatedAt }: AdminDashb
     startRefresh(() => router.refresh());
   }
 
+  async function openUser(user: AdminUser) {
+    setSelectedUser(user);
+    setUserDetails(null);
+    setDetailsError(null);
+    setDetailsLoading(true);
+    try {
+      const response = await fetch(`/api/admin/users/${user.id}`, {
+        headers: { 'x-admin-route-token': routeToken },
+        cache: 'no-store',
+      });
+      if (!response.ok) throw new Error('Не удалось загрузить историю тестирования.');
+      setUserDetails((await response.json()) as AdminUserDetails);
+    } catch (error) {
+      setDetailsError(error instanceof Error ? error.message : 'Ошибка загрузки.');
+    } finally {
+      setDetailsLoading(false);
+    }
+  }
+
   return (
     <main className="min-h-screen bg-[#f4f4ef] px-4 py-5 [background-image:linear-gradient(rgba(23,32,51,0.026)_1px,transparent_1px),linear-gradient(90deg,rgba(23,32,51,0.026)_1px,transparent_1px)] [background-size:38px_38px] sm:px-6 sm:py-8">
       <div className="mx-auto max-w-[1280px]">
         <header className="mb-7 flex flex-col gap-5 sm:mb-8 lg:flex-row lg:items-center lg:justify-between">
           <div className="flex items-center gap-3.5">
-            <h1 className="m-0 text-[26px] leading-tight font-[800] tracking-[-0.045em] text-[#172033] sm:text-[30px]">
-              Пользователи
-            </h1>
+            <div>
+              <p className="m-0 text-[10px] font-extrabold tracking-[0.08em] text-[#777e89] uppercase">Bilim Orda · админка</p>
+              <h1 className="mt-1 mb-0 text-[26px] leading-tight font-[800] tracking-[-0.045em] text-[#172033] sm:text-[30px]">Пользователи</h1>
+            </div>
           </div>
 
           <div className="flex flex-wrap items-center gap-2.5">
+            <AdminNav token={routeToken} active="users" />
             <div className="mr-auto text-[11px] leading-4 text-[#858b94] lg:mr-2 lg:text-right">
               Последнее обновление
               <br />
@@ -221,6 +251,8 @@ export default function AdminDashboard({ items, total, generatedAt }: AdminDashb
                       <th className="px-5 py-3.5">Телефон</th>
                       <th className="px-5 py-3.5">Регистрация</th>
                       <th className="px-5 py-3.5">Обновление</th>
+                      <th className="px-5 py-3.5">Тест</th>
+                      <th className="px-5 py-3.5"><span className="sr-only">Действия</span></th>
                     </tr>
                   </thead>
                   <tbody>
@@ -256,6 +288,12 @@ export default function AdminDashboard({ items, total, generatedAt }: AdminDashb
                         </td>
                         <td className="whitespace-nowrap px-5 py-4 text-[11px] font-semibold text-[#737a84]">
                           {formatDate(user.updatedAt)}
+                        </td>
+                        <td className="px-5 py-4">
+                          {user.latestAttempt ? <div className="min-w-24"><span className={`inline-flex rounded-full px-2.5 py-1 text-[9px] font-extrabold ${user.latestAttempt.status === 'COMPLETED' ? 'bg-[#e5f8f3] text-[#226553]' : user.latestAttempt.status === 'IN_PROGRESS' ? 'bg-[#fff1d6] text-[#8c641f]' : 'bg-[#eeeeea] text-[#737983]'}`}>{ADMIN_STATUS_LABELS[user.latestAttempt.status]}</span><span className="mt-1 block text-[9px] font-semibold text-[#8a9099]">{user.latestAttempt.answeredCount}/{user.latestAttempt.total}</span></div> : <span className="text-[10px] font-semibold text-[#a0a4aa]">Не начат</span>}
+                        </td>
+                        <td className="px-5 py-4">
+                          <button className="flex size-9 cursor-pointer items-center justify-center rounded-xl border border-[#dfe1dd] bg-white text-[#59616d] hover:border-[#172033] hover:text-[#172033]" type="button" onClick={() => openUser(user)} aria-label={`Открыть карточку ${user.fullName}`}><Eye size={15} /></button>
                         </td>
                       </tr>
                     ))}
@@ -310,6 +348,10 @@ export default function AdminDashboard({ items, total, generatedAt }: AdminDashb
                         </span>
                       </div>
                     </div>
+                    <div className="mt-3 flex items-center justify-between gap-3">
+                      <span className="text-[10px] font-bold text-[#7b828c]">{user.latestAttempt ? `${ADMIN_STATUS_LABELS[user.latestAttempt.status]} · ${user.latestAttempt.answeredCount}/${user.latestAttempt.total}` : 'Тест не начат'}</span>
+                      <button className="flex h-9 cursor-pointer items-center gap-2 rounded-xl border border-[#dfe1dd] bg-white px-3 text-[10px] font-bold text-[#4e5663]" type="button" onClick={() => openUser(user)}><Eye size={14} /> Подробнее</button>
+                    </div>
                   </article>
                 ))}
               </div>
@@ -321,6 +363,7 @@ export default function AdminDashboard({ items, total, generatedAt }: AdminDashb
           Персональные данные. Не передавайте ссылку на эту страницу третьим лицам.
         </footer>
       </div>
+      {selectedUser ? <UserDetailsDrawer user={selectedUser} details={userDetails} loading={detailsLoading} error={detailsError} onClose={() => setSelectedUser(null)} /> : null}
     </main>
   );
 }

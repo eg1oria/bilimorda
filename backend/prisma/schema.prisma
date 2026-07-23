@@ -8,11 +8,85 @@ datasource db {
 }
 
 model User {
-  id        String   @id @default(uuid())
+  id        String        @id @default(uuid())
   fullName  String
   school    String
   grade     String
-  phone     String   @unique
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  phone     String        @unique
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+  attempts  TestAttempt[]
+}
+
+model Question {
+  id                 String              @id @default(uuid())
+  textRu             String
+  textKk             String?
+  module             String
+  sortOrder          Int                 @default(0)
+  scoreTarget        String
+  reverseScored      Boolean             @default(false)
+  included           Boolean             @default(true)
+  createdAt          DateTime            @default(now())
+  updatedAt          DateTime            @updatedAt
+  publishedQuestions PublishedQuestion[]
+
+  @@index([module, sortOrder])
+}
+
+model QuestionnaireVersion {
+  id          String              @id @default(uuid())
+  number      Int                 @unique
+  publishedAt DateTime            @default(now())
+  questions   PublishedQuestion[]
+  attempts    TestAttempt[]
+}
+
+model PublishedQuestion {
+  id               String               @id @default(uuid())
+  versionId        String
+  sourceQuestionId String
+  textRu           String
+  textKk           String?
+  module           String
+  sortOrder        Int
+  scoreTarget      String
+  reverseScored    Boolean
+  version          QuestionnaireVersion @relation(fields: [versionId], references: [id], onDelete: Cascade)
+  sourceQuestion   Question             @relation(fields: [sourceQuestionId], references: [id])
+  answers          Answer[]
+
+  @@unique([versionId, sourceQuestionId])
+  @@index([versionId, module, sortOrder])
+}
+
+model TestAttempt {
+  id          String               @id @default(uuid())
+  userId      String
+  versionId   String
+  tokenHash   String               @unique
+  status      String               @default("IN_PROGRESS")
+  resultJson  String?
+  startedAt   DateTime             @default(now())
+  completedAt DateTime?
+  abandonedAt DateTime?
+  user        User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
+  version     QuestionnaireVersion @relation(fields: [versionId], references: [id])
+  answers     Answer[]
+
+  @@index([userId, startedAt])
+}
+
+model Answer {
+  id         String            @id @default(uuid())
+  attemptId  String
+  questionId String
+  value      Int
+  createdAt  DateTime          @default(now())
+  updatedAt  DateTime          @updatedAt
+  attempt    TestAttempt       @relation(fields: [attemptId], references: [id], onDelete: Cascade)
+  question   PublishedQuestion @relation(fields: [questionId], references: [id])
+
+  @@unique([attemptId, questionId])
+  @@index([questionId])
 }

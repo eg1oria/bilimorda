@@ -1,4 +1,4 @@
-import { Controller, Get, UseGuards } from '@nestjs/common';
+import { Controller, Get, Param, UseGuards } from '@nestjs/common';
 import { UsersService } from '../users/users.service';
 import { AdminApiKeyGuard } from './admin-api-key.guard';
 
@@ -16,5 +16,10 @@ export class AdminController {
       total: items.length,
       generatedAt: new Date().toISOString(),
     };
+  }
+
+  @Get(':id')
+  findOne(@Param('id') id: string) {
+    return this.usersService.findOneAdmin(id);
   }
 }

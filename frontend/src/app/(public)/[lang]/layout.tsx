@@ -63,7 +63,10 @@ export default async function LocalizedLayout({
   if (!isLocale(lang)) notFound();
 
   return (
-    <html lang={localeConfig[lang].htmlLang} className={`${manrope.variable} scroll-smooth`}>
+    <html
+      lang={localeConfig[lang].htmlLang}
+      className={`${manrope.variable} scroll-smooth`}
+      suppressHydrationWarning>
       <body className="m-0 min-w-80 bg-[#f4f4ef] text-[#172033] [font-family:var(--font-manrope),Arial,sans-serif]">
         {children}
       </body>
