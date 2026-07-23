@@ -11,6 +11,8 @@ const securityHeaders = [
 ];
 
 const nextConfig: NextConfig = {
+  output: "standalone",
+  poweredByHeader: false,
   reactCompiler: true,
   allowedDevOrigins: ["192.168.178.70"],
   async headers() {

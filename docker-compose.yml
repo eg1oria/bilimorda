@@ -1,0 +1,117 @@
+name: bilimorda
+
+x-service-defaults: &service-defaults
+  init: true
+  read_only: true
+  cap_drop:
+    - ALL
+  security_opt:
+    - no-new-privileges:true
+  restart: unless-stopped
+  logging:
+    driver: json-file
+    options:
+      max-size: 10m
+      max-file: "3"
+
+services:
+  backend:
+    <<: *service-defaults
+    image: bilimorda-backend:local
+    build:
+      context: ./backend
+    environment:
+      NODE_ENV: production
+      PORT: "3001"
+      HOST: 0.0.0.0
+      DATABASE_URL: file:/app/data/bilimorda.db
+      ADMIN_API_KEY: ${ADMIN_API_KEY:?Set ADMIN_API_KEY in .env}
+    expose:
+      - "3001"
+    volumes:
+      - backend_data:/app/data
+    networks:
+      - app
+    tmpfs:
+      - /tmp:size=64m,mode=1777
+    healthcheck:
+      test:
+        - CMD
+        - node
+        - -e
+        - "fetch('http://127.0.0.1:3001/api/health').then((response) => process.exit(response.ok ? 0 : 1)).catch(() => process.exit(1))"
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 30s
+    stop_grace_period: 30s
+
+  frontend:
+    <<: *service-defaults
+    image: bilimorda-frontend:local
+    build:
+      context: ./frontend
+      args:
+        SITE_URL: ${SITE_URL:?Set SITE_URL in .env}
+    environment:
+      SITE_URL: ${SITE_URL:?Set SITE_URL in .env}
+      BACKEND_INTERNAL_URL: http://backend:3001
+      ADMIN_API_KEY: ${ADMIN_API_KEY:?Set ADMIN_API_KEY in .env}
+      ADMIN_ROUTE_TOKEN: ${ADMIN_ROUTE_TOKEN:?Set ADMIN_ROUTE_TOKEN in .env}
+    depends_on:
+      backend:
+        condition: service_healthy
+    ports:
+      - "127.0.0.1:3000:3000"
+    volumes:
+      - frontend_cache:/app/.next/cache
+    networks:
+      - app
+    tmpfs:
+      - /tmp:size=64m,mode=1777
+    healthcheck:
+      test:
+        - CMD
+        - node
+        - -e
+        - "fetch('http://127.0.0.1:3000/api/health').then((response) => process.exit(response.ok ? 0 : 1)).catch(() => process.exit(1))"
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 30s
+    stop_grace_period: 30s
+
+  backup:
+    build:
+      context: ./deploy/backup
+    profiles:
+      - maintenance
+    environment:
+      BACKUP_RETENTION_DAYS: ${BACKUP_RETENTION_DAYS:-30}
+    volumes:
+      - backend_data:/data:ro
+      - ${BACKUP_DIR:?Set BACKUP_DIR in .env}:/backups
+    network_mode: none
+    read_only: true
+    tmpfs:
+      - /tmp:size=16m,mode=1777
+    cap_drop:
+      - ALL
+    cap_add:
+      - DAC_READ_SEARCH
+    security_opt:
+      - no-new-privileges:true
+    restart: "no"
+    logging:
+      driver: json-file
+      options:
+        max-size: 1m
+        max-file: "1"
+
+networks:
+  app:
+    internal: true
+
+volumes:
+  backend_data:
+  frontend_cache:

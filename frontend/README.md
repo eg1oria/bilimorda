@@ -32,5 +32,6 @@ Next.js-интерфейс регистрации, прохождения тес
 - `npm run lint` — ESLint.
 - `npm run build` — production-сборка; требует корректный `SITE_URL`.
 
-Для VPS frontend должен иметь сетевой доступ к `BACKEND_INTERNAL_URL`, а сам
-NestJS рекомендуется оставлять доступным только на loopback-интерфейсе.
+В Docker production `BACKEND_INTERNAL_URL` указывает на NestJS во внутренней
+сети, а наружу публикуется только Next.js на `127.0.0.1:3000`. Полная
+инструкция для VPS находится в корневом `DEPLOY.md`.

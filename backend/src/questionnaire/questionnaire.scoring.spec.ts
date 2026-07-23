@@ -120,10 +120,30 @@ describe('calculateQuestionnaireResult', () => {
     expect(result.mbti.type).toBe('ESTJ');
     expect(result.mbti.axes).toEqual(
       expect.arrayContaining([
-        expect.objectContaining({ axis: 'EI', letter: 'E', leftPercent: 50, rightPercent: 50 }),
-        expect.objectContaining({ axis: 'SN', letter: 'S', leftPercent: 50, rightPercent: 50 }),
-        expect.objectContaining({ axis: 'TF', letter: 'T', leftPercent: 50, rightPercent: 50 }),
-        expect.objectContaining({ axis: 'JP', letter: 'J', leftPercent: 50, rightPercent: 50 }),
+        expect.objectContaining({
+          axis: 'EI',
+          letter: 'E',
+          leftPercent: 50,
+          rightPercent: 50,
+        }),
+        expect.objectContaining({
+          axis: 'SN',
+          letter: 'S',
+          leftPercent: 50,
+          rightPercent: 50,
+        }),
+        expect.objectContaining({
+          axis: 'TF',
+          letter: 'T',
+          leftPercent: 50,
+          rightPercent: 50,
+        }),
+        expect.objectContaining({
+          axis: 'JP',
+          letter: 'J',
+          leftPercent: 50,
+          rightPercent: 50,
+        }),
       ]),
     );
   });

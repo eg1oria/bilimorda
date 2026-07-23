@@ -1,0 +1,10 @@
+[Unit]
+Description=Bilimorda verified SQLite backup
+Requires=docker.service
+After=docker.service
+ConditionPathExists=/opt/bilimorda/docker-compose.yml
+
+[Service]
+Type=oneshot
+WorkingDirectory=/opt/bilimorda
+ExecStart=/usr/bin/docker compose --profile maintenance run --rm --no-deps backup

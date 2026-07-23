@@ -440,8 +440,8 @@ export default function ResultExperience({ locale }: { locale: Locale }) {
           </ol>
         </section>
 
-        <footer className="mt-8 border-t border-[#d9ddda] pt-5 sm:flex sm:items-center sm:justify-between sm:gap-6">
-          <p className="m-0 max-w-3xl text-[10px] leading-5 text-[#626b73]">
+        <footer className="mt-8 mb-6 border-t border-[#d9ddda] pt-5 flex flex-col-reverse sm:flex sm:items-center sm:justify-between gap-2 sm:gap-6">
+          <p className="m-0 max-w-3xl text-center text-[10px] leading-5 text-[#626b73]">
             {catalog.ui.disclaimer}
           </p>
           <Link
