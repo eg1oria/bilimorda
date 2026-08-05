@@ -17,7 +17,6 @@ import type { Locale } from '@/i18n/config';
 import type { AttemptSession, QuestionnaireResult } from '@/lib/questionnaire-types';
 import { getPreferenceLevel, normalizeMbti } from '@/lib/result-profile';
 import {
-  clearQuestionnaireStorage,
   readAttemptToken,
   readQuestionnaireResult,
   saveQuestionnaireResult,
@@ -104,7 +103,6 @@ export default function ResultExperience({ locale }: { locale: Locale }) {
 export function QuestionnaireResultReport({
   locale,
   result,
-  showNewAttempt = true,
   expandDetails = false,
   idPrefix = 'result',
 }: {
@@ -180,315 +178,293 @@ export function QuestionnaireResultReport({
   const planTitleId = `${idPrefix}-plan-title`;
 
   return (
-      <div className="mx-auto max-w-[1080px]">
-        <header className="mb-7 max-w-3xl sm:mb-9">
-          <h1 className="mt-2 mb-0 text-[clamp(1.8rem,6vw,2.75rem)] leading-[1.08] font-[820] tracking-[-0.045em] text-[#172033]">
-            {catalog.ui.title}
-          </h1>
-          <p className="mt-3 mb-0 max-w-2xl text-sm leading-6 text-[#646d79]">
-            {catalog.ui.subtitle}
-          </p>
-        </header>
+    <div className="mx-auto max-w-[1080px]">
+      <header className="mb-7 max-w-3xl sm:mb-9">
+        <h1 className="mt-2 mb-0 text-[clamp(1.8rem,6vw,2.75rem)] leading-[1.08] font-[820] tracking-[-0.045em] text-[#172033]">
+          {catalog.ui.title}
+        </h1>
+        <p className="mt-3 mb-0 max-w-2xl text-sm leading-6 text-[#646d79]">
+          {catalog.ui.subtitle}
+        </p>
+      </header>
 
-        <section
-          className="mb-8 overflow-hidden rounded-2xl border border-[#d8ddd9] bg-white"
-          aria-labelledby={overviewTitleId}>
-          <h2 className="sr-only" id={overviewTitleId}>
-            {catalog.ui.overviewEyebrow}
-          </h2>
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4">
-            <OverviewItem label={catalog.ui.mbtiLabel} position={0} emphasized>
-              <span className="text-3xl tracking-[0.08em]">{mbti.type}</span>
-            </OverviewItem>
-            <OverviewItem label={catalog.ui.rolesLabel} position={1}>
-              <span className="text-sm leading-5">
-                {roleProfiles[0].title}
-                <br />
-                {roleProfiles[1].title}
-              </span>
-            </OverviewItem>
-            <OverviewItem label={catalog.ui.riasecLabel} position={2}>
-              <span className="text-2xl tracking-[0.14em]">{riasecCode}</span>
-            </OverviewItem>
-            <OverviewItem label={catalog.ui.entLabel} position={3}>
-              <span className="text-sm leading-5">{primaryPair.title}</span>
-            </OverviewItem>
-          </div>
-        </section>
+      <section
+        className="mb-8 overflow-hidden rounded-2xl border border-[#d8ddd9] bg-white"
+        aria-labelledby={overviewTitleId}>
+        <h2 className="sr-only" id={overviewTitleId}>
+          {catalog.ui.overviewEyebrow}
+        </h2>
+        <div className="grid sm:grid-cols-2 lg:grid-cols-4">
+          <OverviewItem label={catalog.ui.mbtiLabel} position={0} emphasized>
+            <span className="text-3xl tracking-[0.08em]">{mbti.type}</span>
+          </OverviewItem>
+          <OverviewItem label={catalog.ui.rolesLabel} position={1}>
+            <span className="text-sm leading-5">
+              {roleProfiles[0].title}
+              <br />
+              {roleProfiles[1].title}
+            </span>
+          </OverviewItem>
+          <OverviewItem label={catalog.ui.riasecLabel} position={2}>
+            <span className="text-2xl tracking-[0.14em]">{riasecCode}</span>
+          </OverviewItem>
+          <OverviewItem label={catalog.ui.entLabel} position={3}>
+            <span className="text-sm leading-5">{primaryPair.title}</span>
+          </OverviewItem>
+        </div>
+      </section>
 
-        <section aria-labelledby={detailsTitleId}>
-          <h2 className="mb-3 text-sm font-[800] text-[#172033]" id={detailsTitleId}>
-            {catalog.ui.detailsIntro}
-          </h2>
+      <section aria-labelledby={detailsTitleId}>
+        <h2 className="mb-3 text-sm font-[800] text-[#172033]" id={detailsTitleId}>
+          {catalog.ui.detailsIntro}
+        </h2>
 
-          <ReportDetails
-            title={catalog.ui.mbtiSection}
-            hint={catalog.ui.mbtiSectionHint}
-            initiallyOpen={expandDetails}>
-            <div className="grid gap-6 p-4 sm:p-6 lg:grid-cols-[0.82fr_1.18fr] lg:p-7">
-              <div>
-                <div className="rounded-xl border border-[#d8cdec] bg-[#f2edfa] p-4 sm:p-5">
-                  <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
-                    <strong className="text-3xl tracking-[0.08em] text-[#2d2342]">
-                      {mbti.type}
-                    </strong>
-                    <span className="text-sm font-bold text-[#57466f]">{mbtiProfile.title}</span>
-                  </div>
-                  <p className="mt-3 mb-0 text-sm leading-6 text-[#5e5570]">
-                    {mbtiProfile.description}
-                  </p>
-                  <blockquote className="mt-4 mb-0 border-l-2 border-[#8268aa] pl-3 text-xs leading-5 font-semibold text-[#4c3d63]">
-                    {mbtiProfile.quote}
-                  </blockquote>
+        <ReportDetails
+          title={catalog.ui.mbtiSection}
+          hint={catalog.ui.mbtiSectionHint}
+          initiallyOpen={expandDetails}>
+          <div className="grid gap-6 p-4 sm:p-6 lg:grid-cols-[0.82fr_1.18fr] lg:p-7">
+            <div>
+              <div className="rounded-xl border border-[#d8cdec] bg-[#f2edfa] p-4 sm:p-5">
+                <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
+                  <strong className="text-3xl tracking-[0.08em] text-[#2d2342]">{mbti.type}</strong>
+                  <span className="text-sm font-bold text-[#57466f]">{mbtiProfile.title}</span>
                 </div>
-
-                <h3 className="mt-6 mb-3 text-sm font-[800] text-[#172033]">
-                  {catalog.ui.axesTitle}
-                </h3>
-                <div className="grid gap-4">
-                  {mbti.axes.map((axis) => {
-                    const level = getPreferenceLevel(axis.leftPercent, axis.rightPercent);
-                    return (
-                      <div key={axis.axis}>
-                        <div className="mb-1.5 flex items-center justify-between gap-4 text-xs font-bold text-[#3d4653]">
-                          <span>
-                            {axis.left} · {axis.leftPercent}%
-                          </span>
-                          <span>
-                            {axis.rightPercent}% · {axis.right}
-                          </span>
-                        </div>
-                        <div
-                          className="flex h-2.5 overflow-hidden rounded-full bg-[#e5e8e5]"
-                          role="meter"
-                          aria-label={`${axis.left}/${axis.right}`}
-                          aria-valuemin={0}
-                          aria-valuemax={100}
-                          aria-valuenow={axis.leftPercent}
-                          aria-valuetext={`${axis.left} ${axis.leftPercent}%, ${axis.right} ${axis.rightPercent}%, ${catalog.ui.preferenceLevels[level]}`}>
-                          <span
-                            className="h-full bg-[#72cbb5]"
-                            style={{ width: `${axis.leftPercent}%` }}
-                          />
-                          <span
-                            className="h-full bg-[#8a72b3]"
-                            style={{ width: `${axis.rightPercent}%` }}
-                          />
-                        </div>
-                        <p className="mt-1.5 mb-0 text-[11px] font-bold text-[#707783]">
-                          {catalog.ui.preferenceLevels[level]}
-                        </p>
-                      </div>
-                    );
-                  })}
-                </div>
+                <p className="mt-3 mb-0 text-sm leading-6 text-[#5e5570]">
+                  {mbtiProfile.description}
+                </p>
+                <blockquote className="mt-4 mb-0 border-l-2 border-[#8268aa] pl-3 text-xs leading-5 font-semibold text-[#4c3d63]">
+                  {mbtiProfile.quote}
+                </blockquote>
               </div>
 
-              <div className="grid content-start gap-3 sm:grid-cols-3 lg:grid-cols-1 xl:grid-cols-3">
-                <ProfileList
-                  title={catalog.ui.strengths}
-                  items={mbtiProfile.strengths}
-                  tone="mint"
-                />
-                <ProfileList title={catalog.ui.risks} items={mbtiProfile.risks} tone="plain" />
-                <ProfileList
-                  title={catalog.ui.recommendations}
-                  items={mbtiProfile.recommendations}
-                  tone="purple"
-                />
-              </div>
-            </div>
-          </ReportDetails>
-
-          <ReportDetails
-            title={catalog.ui.teamSection}
-            hint={catalog.ui.teamSectionHint}
-            initiallyOpen={expandDetails}>
-            <div className="p-4 sm:p-6 lg:p-7">
-              <div className="grid gap-3 md:grid-cols-2">
-                {leadingRoles.map((role, index) => {
-                  const profile = roleProfiles[index];
+              <h3 className="mt-6 mb-3 text-sm font-[800] text-[#172033]">
+                {catalog.ui.axesTitle}
+              </h3>
+              <div className="grid gap-4">
+                {mbti.axes.map((axis) => {
+                  const level = getPreferenceLevel(axis.leftPercent, axis.rightPercent);
                   return (
-                    <article
-                      className="rounded-xl border border-[#dde1de] bg-[#fafbf9] p-4"
-                      key={role.code}>
-                      <div className="flex items-start justify-between gap-4">
-                        <h3 className="m-0 text-base font-[800] text-[#172033]">{profile.title}</h3>
-                        <span className="shrink-0 text-xs font-bold text-[#3e7c6c]">
-                          {role.score}%
+                    <div key={axis.axis}>
+                      <div className="mb-1.5 flex items-center justify-between gap-4 text-xs font-bold text-[#3d4653]">
+                        <span>
+                          {axis.left} · {axis.leftPercent}%
+                        </span>
+                        <span>
+                          {axis.rightPercent}% · {axis.right}
                         </span>
                       </div>
-                      <p className="mt-2 mb-0 text-xs leading-5 text-[#68717c]">
-                        {profile.description}
+                      <div
+                        className="flex h-2.5 overflow-hidden rounded-full bg-[#e5e8e5]"
+                        role="meter"
+                        aria-label={`${axis.left}/${axis.right}`}
+                        aria-valuemin={0}
+                        aria-valuemax={100}
+                        aria-valuenow={axis.leftPercent}
+                        aria-valuetext={`${axis.left} ${axis.leftPercent}%, ${axis.right} ${axis.rightPercent}%, ${catalog.ui.preferenceLevels[level]}`}>
+                        <span
+                          className="h-full bg-[#72cbb5]"
+                          style={{ width: `${axis.leftPercent}%` }}
+                        />
+                        <span
+                          className="h-full bg-[#8a72b3]"
+                          style={{ width: `${axis.rightPercent}%` }}
+                        />
+                      </div>
+                      <p className="mt-1.5 mb-0 text-[11px] font-bold text-[#707783]">
+                        {catalog.ui.preferenceLevels[level]}
                       </p>
-                      <p className="mt-4 mb-1 text-[10px] font-bold tracking-[0.08em] text-[#66706e] uppercase">
-                        {catalog.ui.roleBenefit}
-                      </p>
-                      <p className="m-0 text-xs leading-5 font-semibold text-[#303a47]">
-                        {profile.entBenefit}
-                      </p>
-                    </article>
+                    </div>
                   );
                 })}
               </div>
-
-              <div className="mt-5 grid gap-5 lg:grid-cols-[0.8fr_1.2fr]">
-                <div>
-                  <h3 className="m-0 text-sm font-[800] text-[#172033]">
-                    {catalog.ui.combinedStrengths}
-                  </h3>
-                  <ul className="mt-3 mb-0 grid gap-2 p-0">
-                    {combinedStrengths.map((strength) => (
-                      <li
-                        className="list-none rounded-lg bg-[#eaf6f2] px-3 py-2 text-xs font-semibold text-[#315e53]"
-                        key={strength}>
-                        {strength}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-                <div>
-                  <h3 className="m-0 text-sm font-[800] text-[#172033]">
-                    {catalog.ui.riskReduction}
-                  </h3>
-                  <div className="mt-3 grid gap-2">
-                    {riskMitigations.map((item, index) => (
-                      <div
-                        className="grid gap-1 rounded-lg border border-[#e0e2df] p-3 sm:grid-cols-[0.85fr_1.15fr] sm:gap-4"
-                        key={`${item.risk}-${index}`}>
-                        <p className="m-0 text-xs leading-5 font-semibold text-[#4d5662]">
-                          {item.risk}
-                        </p>
-                        <p className="m-0 text-xs leading-5 text-[#626a75]">
-                          <span className="mr-1 font-bold text-[#6e5890]">
-                            {catalog.ui.riskArrowLabel}:
-                          </span>
-                          {item.mitigation}
-                        </p>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </div>
             </div>
-          </ReportDetails>
 
-          <ReportDetails
-            title={catalog.ui.riasecSection}
-            hint={catalog.ui.riasecSectionHint}
-            initiallyOpen={expandDetails}>
-            <div className="grid gap-x-8 gap-y-5 p-4 sm:p-6 md:grid-cols-2 lg:p-7">
-              {orderedInterests.map((interest) => {
-                const profile = catalog.riasec[interest.code];
+            <div className="grid content-start gap-3 sm:grid-cols-3 lg:grid-cols-1 xl:grid-cols-3">
+              <ProfileList title={catalog.ui.strengths} items={mbtiProfile.strengths} tone="mint" />
+              <ProfileList title={catalog.ui.risks} items={mbtiProfile.risks} tone="plain" />
+              <ProfileList
+                title={catalog.ui.recommendations}
+                items={mbtiProfile.recommendations}
+                tone="purple"
+              />
+            </div>
+          </div>
+        </ReportDetails>
+
+        <ReportDetails
+          title={catalog.ui.teamSection}
+          hint={catalog.ui.teamSectionHint}
+          initiallyOpen={expandDetails}>
+          <div className="p-4 sm:p-6 lg:p-7">
+            <div className="grid gap-3 md:grid-cols-2">
+              {leadingRoles.map((role, index) => {
+                const profile = roleProfiles[index];
                 return (
-                  <article key={interest.code}>
-                    <div className="mb-2 flex items-baseline justify-between gap-3">
-                      <h3 className="m-0 text-sm font-[800] text-[#172033]">
-                        <span className="mr-2 text-[#3c7768]">{interest.code}</span>
-                        {profile.title}
-                      </h3>
-                      <span className="text-xs font-bold text-[#4e5865]">{interest.score}%</span>
+                  <article
+                    className="rounded-xl border border-[#dde1de] bg-[#fafbf9] p-4"
+                    key={role.code}>
+                    <div className="flex items-start justify-between gap-4">
+                      <h3 className="m-0 text-base font-[800] text-[#172033]">{profile.title}</h3>
+                      <span className="shrink-0 text-xs font-bold text-[#3e7c6c]">
+                        {role.score}%
+                      </span>
                     </div>
-                    <div
-                      className="h-2 overflow-hidden rounded-full bg-[#e3e7e3]"
-                      role="meter"
-                      aria-label={`${interest.code} — ${profile.title}`}
-                      aria-valuemin={0}
-                      aria-valuemax={100}
-                      aria-valuenow={interest.score}
-                      aria-valuetext={`${interest.score}%`}>
-                      <span
-                        className="block h-full rounded-full bg-[#72cbb5]"
-                        style={{ width: `${interest.score}%` }}
-                      />
-                    </div>
-                    <p className="mt-2 mb-0 text-xs leading-5 text-[#6c747f]">
+                    <p className="mt-2 mb-0 text-xs leading-5 text-[#68717c]">
                       {profile.description}
+                    </p>
+                    <p className="mt-4 mb-1 text-[10px] font-bold tracking-[0.08em] text-[#66706e] uppercase">
+                      {catalog.ui.roleBenefit}
+                    </p>
+                    <p className="m-0 text-xs leading-5 font-semibold text-[#303a47]">
+                      {profile.entBenefit}
                     </p>
                   </article>
                 );
               })}
             </div>
-          </ReportDetails>
-        </section>
 
-        <section
-          className="mt-8 rounded-2xl border border-[#d1dfda] bg-[#eef8f4] p-4 sm:p-6"
-          aria-labelledby={entTitleId}>
-          <div className="grid gap-5 lg:grid-cols-[0.72fr_1.28fr]">
-            <div>
-              <p className="m-0 text-[10px] font-bold tracking-[0.1em] text-[#477b6d] uppercase">
-                {catalog.ui.entTitle}
-              </p>
-              <h2 className="mt-2 mb-0 text-xl leading-7 font-[820] text-[#172033]" id={entTitleId}>
-                {primaryPair.title}
-              </h2>
-              <p className="mt-2 mb-0 text-xs leading-5 text-[#62736d]">{catalog.ui.entIntro}</p>
-            </div>
-            <div className="grid gap-4 sm:grid-cols-2">
+            <div className="mt-5 grid gap-5 lg:grid-cols-[0.8fr_1.2fr]">
               <div>
-                <h3 className="m-0 text-xs font-[800] text-[#172033]">{catalog.ui.whyItFits}</h3>
-                <p className="mt-2 mb-0 text-xs leading-5 text-[#52635e]">
-                  {primaryPair.fit} {entContext}
-                </p>
-              </div>
-              <div>
-                <h3 className="m-0 text-xs font-[800] text-[#172033]">{catalog.ui.directions}</h3>
-                <ul className="mt-2 mb-0 grid gap-1.5 text-xs leading-5 text-[#52635e]">
-                  {primaryPair.directions.map((direction) => (
-                    <li key={direction}>{direction}</li>
+                <h3 className="m-0 text-sm font-[800] text-[#172033]">
+                  {catalog.ui.combinedStrengths}
+                </h3>
+                <ul className="mt-3 mb-0 grid gap-2 p-0">
+                  {combinedStrengths.map((strength) => (
+                    <li
+                      className="list-none rounded-lg bg-[#eaf6f2] px-3 py-2 text-xs font-semibold text-[#315e53]"
+                      key={strength}>
+                      {strength}
+                    </li>
                   ))}
                 </ul>
               </div>
+              <div>
+                <h3 className="m-0 text-sm font-[800] text-[#172033]">
+                  {catalog.ui.riskReduction}
+                </h3>
+                <div className="mt-3 grid gap-2">
+                  {riskMitigations.map((item, index) => (
+                    <div
+                      className="grid gap-1 rounded-lg border border-[#e0e2df] p-3 sm:grid-cols-[0.85fr_1.15fr] sm:gap-4"
+                      key={`${item.risk}-${index}`}>
+                      <p className="m-0 text-xs leading-5 font-semibold text-[#4d5662]">
+                        {item.risk}
+                      </p>
+                      <p className="m-0 text-xs leading-5 text-[#626a75]">
+                        <span className="mr-1 font-bold text-[#6e5890]">
+                          {catalog.ui.riskArrowLabel}:
+                        </span>
+                        {item.mitigation}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              </div>
             </div>
           </div>
-        </section>
+        </ReportDetails>
 
-        <section className="mt-8" aria-labelledby={planTitleId}>
-          <div className="mb-4 max-w-2xl">
-            <h2
-              className="m-0 text-xl font-[820] tracking-[-0.02em] text-[#172033]"
-              id={planTitleId}>
-              {catalog.ui.planTitle}
-            </h2>
-            <p className="mt-2 mb-0 text-xs leading-5 text-[#68717c]">{catalog.ui.planIntro}</p>
+        <ReportDetails
+          title={catalog.ui.riasecSection}
+          hint={catalog.ui.riasecSectionHint}
+          initiallyOpen={expandDetails}>
+          <div className="grid gap-x-8 gap-y-5 p-4 sm:p-6 md:grid-cols-2 lg:p-7">
+            {orderedInterests.map((interest) => {
+              const profile = catalog.riasec[interest.code];
+              return (
+                <article key={interest.code}>
+                  <div className="mb-2 flex items-baseline justify-between gap-3">
+                    <h3 className="m-0 text-sm font-[800] text-[#172033]">
+                      <span className="mr-2 text-[#3c7768]">{interest.code}</span>
+                      {profile.title}
+                    </h3>
+                    <span className="text-xs font-bold text-[#4e5865]">{interest.score}%</span>
+                  </div>
+                  <div
+                    className="h-2 overflow-hidden rounded-full bg-[#e3e7e3]"
+                    role="meter"
+                    aria-label={`${interest.code} — ${profile.title}`}
+                    aria-valuemin={0}
+                    aria-valuemax={100}
+                    aria-valuenow={interest.score}
+                    aria-valuetext={`${interest.score}%`}>
+                    <span
+                      className="block h-full rounded-full bg-[#72cbb5]"
+                      style={{ width: `${interest.score}%` }}
+                    />
+                  </div>
+                  <p className="mt-2 mb-0 text-xs leading-5 text-[#6c747f]">
+                    {profile.description}
+                  </p>
+                </article>
+              );
+            })}
           </div>
-          <ol className="m-0 grid gap-3 p-0 lg:grid-cols-5">
-            {planSteps.map((step, index) => (
-              <li
-                className="list-none rounded-xl border border-[#d9ddda] bg-white p-4"
-                key={catalog.plan.dayTitles[index]}>
-                <div className="flex items-center justify-between gap-3">
-                  <span className="text-[10px] font-bold tracking-[0.08em] text-[#5a6570] uppercase">
-                    {catalog.ui.dayLabel} {index + 1}
-                  </span>
-                  <span className="rounded-full bg-[#efe9f7] px-2.5 py-1 text-[10px] font-bold text-[#5e4a7a]">
-                    {catalog.plan.durations[index]} {catalog.ui.durationLabel}
-                  </span>
-                </div>
-                <h3 className="mt-4 mb-0 text-sm font-[800] text-[#172033]">
-                  {catalog.plan.dayTitles[index]}
-                </h3>
-                <p className="mt-2 mb-0 text-xs leading-5 text-[#626b76]">{step}</p>
-              </li>
-            ))}
-          </ol>
-        </section>
+        </ReportDetails>
+      </section>
 
-        <footer className="mt-8 mb-6 border-t border-[#d9ddda] pt-5 flex flex-col-reverse sm:flex sm:items-center sm:justify-between gap-2 sm:gap-6">
-          <p className="m-0 max-w-3xl text-center text-[10px] leading-5 text-[#626b73]">
-            {catalog.ui.disclaimer}
-          </p>
-          {showNewAttempt ? (
-            <Link
-              className="result-primary-link mt-4 shrink-0 sm:mt-0"
-              href={`/${locale}`}
-              onClick={clearQuestionnaireStorage}>
-              {catalog.ui.newAttempt}
-            </Link>
-          ) : null}
-        </footer>
-      </div>
+      <section
+        className="mt-8 rounded-2xl border border-[#d1dfda] bg-[#eef8f4] p-4 sm:p-6"
+        aria-labelledby={entTitleId}>
+        <div className="grid gap-5 lg:grid-cols-[0.72fr_1.28fr]">
+          <div>
+            <p className="m-0 text-[10px] font-bold tracking-[0.1em] text-[#477b6d] uppercase">
+              {catalog.ui.entTitle}
+            </p>
+            <h2 className="mt-2 mb-0 text-xl leading-7 font-[820] text-[#172033]" id={entTitleId}>
+              {primaryPair.title}
+            </h2>
+            <p className="mt-2 mb-0 text-xs leading-5 text-[#62736d]">{catalog.ui.entIntro}</p>
+          </div>
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div>
+              <h3 className="m-0 text-xs font-[800] text-[#172033]">{catalog.ui.whyItFits}</h3>
+              <p className="mt-2 mb-0 text-xs leading-5 text-[#52635e]">
+                {primaryPair.fit} {entContext}
+              </p>
+            </div>
+            <div>
+              <h3 className="m-0 text-xs font-[800] text-[#172033]">{catalog.ui.directions}</h3>
+              <ul className="mt-2 mb-0 grid gap-1.5 text-xs leading-5 text-[#52635e]">
+                {primaryPair.directions.map((direction) => (
+                  <li key={direction}>{direction}</li>
+                ))}
+              </ul>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section className="mt-8" aria-labelledby={planTitleId}>
+        <div className="mb-4 max-w-2xl">
+          <h2 className="m-0 text-xl font-[820] tracking-[-0.02em] text-[#172033]" id={planTitleId}>
+            {catalog.ui.planTitle}
+          </h2>
+          <p className="mt-2 mb-0 text-xs leading-5 text-[#68717c]">{catalog.ui.planIntro}</p>
+        </div>
+        <ol className="m-0 grid gap-3 p-0 lg:grid-cols-5">
+          {planSteps.map((step, index) => (
+            <li
+              className="list-none rounded-xl border border-[#d9ddda] bg-white p-4"
+              key={catalog.plan.dayTitles[index]}>
+              <div className="flex items-center justify-between gap-3">
+                <span className="text-[10px] font-bold tracking-[0.08em] text-[#5a6570] uppercase">
+                  {catalog.ui.dayLabel} {index + 1}
+                </span>
+                <span className="rounded-full bg-[#efe9f7] px-2.5 py-1 text-[10px] font-bold text-[#5e4a7a]">
+                  {catalog.plan.durations[index]} {catalog.ui.durationLabel}
+                </span>
+              </div>
+              <h3 className="mt-4 mb-0 text-sm font-[800] text-[#172033]">
+                {catalog.plan.dayTitles[index]}
+              </h3>
+              <p className="mt-2 mb-0 text-xs leading-5 text-[#626b76]">{step}</p>
+            </li>
+          ))}
+        </ol>
+      </section>
+    </div>
   );
 }
 

@@ -67,7 +67,6 @@ export default function UserDetailsDrawer({
                     <QuestionnaireResultReport
                       locale="ru"
                       result={attempt.result}
-                      showNewAttempt={false}
                       expandDetails
                       idPrefix={`admin-attempt-${attempt.id}`}
                     />
