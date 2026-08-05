@@ -94,6 +94,28 @@ export default function ResultExperience({ locale }: { locale: Locale }) {
     );
   }
 
+  return (
+    <main className="min-h-[calc(100vh-82px)] px-3 py-7 sm:px-6 sm:py-11" id="top">
+      <QuestionnaireResultReport locale={locale} result={result} />
+    </main>
+  );
+}
+
+export function QuestionnaireResultReport({
+  locale,
+  result,
+  showNewAttempt = true,
+  expandDetails = false,
+  idPrefix = 'result',
+}: {
+  locale: Locale;
+  result: QuestionnaireResult;
+  showNewAttempt?: boolean;
+  expandDetails?: boolean;
+  idPrefix?: string;
+}) {
+  const catalog = getResultCatalog(locale);
+
   const mbti = normalizeMbti(result.mbti);
   const mbtiProfile = catalog.mbti[mbti.type];
   const roleScores = result.teamRoles.flatMap((role) =>
@@ -152,8 +174,12 @@ export default function ResultExperience({ locale }: { locale: Locale }) {
     studyTool: catalog.riasec[firstInterest.code].studyTool,
   });
 
+  const overviewTitleId = `${idPrefix}-overview-title`;
+  const detailsTitleId = `${idPrefix}-details-title`;
+  const entTitleId = `${idPrefix}-ent-title`;
+  const planTitleId = `${idPrefix}-plan-title`;
+
   return (
-    <main className="min-h-[calc(100vh-82px)] px-3 py-7 sm:px-6 sm:py-11" id="top">
       <div className="mx-auto max-w-[1080px]">
         <header className="mb-7 max-w-3xl sm:mb-9">
           <h1 className="mt-2 mb-0 text-[clamp(1.8rem,6vw,2.75rem)] leading-[1.08] font-[820] tracking-[-0.045em] text-[#172033]">
@@ -166,8 +192,8 @@ export default function ResultExperience({ locale }: { locale: Locale }) {
 
         <section
           className="mb-8 overflow-hidden rounded-2xl border border-[#d8ddd9] bg-white"
-          aria-labelledby="overview-title">
-          <h2 className="sr-only" id="overview-title">
+          aria-labelledby={overviewTitleId}>
+          <h2 className="sr-only" id={overviewTitleId}>
             {catalog.ui.overviewEyebrow}
           </h2>
           <div className="grid sm:grid-cols-2 lg:grid-cols-4">
@@ -190,12 +216,15 @@ export default function ResultExperience({ locale }: { locale: Locale }) {
           </div>
         </section>
 
-        <section aria-labelledby="details-title">
-          <h2 className="mb-3 text-sm font-[800] text-[#172033]" id="details-title">
+        <section aria-labelledby={detailsTitleId}>
+          <h2 className="mb-3 text-sm font-[800] text-[#172033]" id={detailsTitleId}>
             {catalog.ui.detailsIntro}
           </h2>
 
-          <ReportDetails title={catalog.ui.mbtiSection} hint={catalog.ui.mbtiSectionHint}>
+          <ReportDetails
+            title={catalog.ui.mbtiSection}
+            hint={catalog.ui.mbtiSectionHint}
+            initiallyOpen={expandDetails}>
             <div className="grid gap-6 p-4 sm:p-6 lg:grid-cols-[0.82fr_1.18fr] lg:p-7">
               <div>
                 <div className="rounded-xl border border-[#d8cdec] bg-[#f2edfa] p-4 sm:p-5">
@@ -271,7 +300,10 @@ export default function ResultExperience({ locale }: { locale: Locale }) {
             </div>
           </ReportDetails>
 
-          <ReportDetails title={catalog.ui.teamSection} hint={catalog.ui.teamSectionHint}>
+          <ReportDetails
+            title={catalog.ui.teamSection}
+            hint={catalog.ui.teamSectionHint}
+            initiallyOpen={expandDetails}>
             <div className="p-4 sm:p-6 lg:p-7">
               <div className="grid gap-3 md:grid-cols-2">
                 {leadingRoles.map((role, index) => {
@@ -341,7 +373,10 @@ export default function ResultExperience({ locale }: { locale: Locale }) {
             </div>
           </ReportDetails>
 
-          <ReportDetails title={catalog.ui.riasecSection} hint={catalog.ui.riasecSectionHint}>
+          <ReportDetails
+            title={catalog.ui.riasecSection}
+            hint={catalog.ui.riasecSectionHint}
+            initiallyOpen={expandDetails}>
             <div className="grid gap-x-8 gap-y-5 p-4 sm:p-6 md:grid-cols-2 lg:p-7">
               {orderedInterests.map((interest) => {
                 const profile = catalog.riasec[interest.code];
@@ -379,13 +414,13 @@ export default function ResultExperience({ locale }: { locale: Locale }) {
 
         <section
           className="mt-8 rounded-2xl border border-[#d1dfda] bg-[#eef8f4] p-4 sm:p-6"
-          aria-labelledby="ent-title">
+          aria-labelledby={entTitleId}>
           <div className="grid gap-5 lg:grid-cols-[0.72fr_1.28fr]">
             <div>
               <p className="m-0 text-[10px] font-bold tracking-[0.1em] text-[#477b6d] uppercase">
                 {catalog.ui.entTitle}
               </p>
-              <h2 className="mt-2 mb-0 text-xl leading-7 font-[820] text-[#172033]" id="ent-title">
+              <h2 className="mt-2 mb-0 text-xl leading-7 font-[820] text-[#172033]" id={entTitleId}>
                 {primaryPair.title}
               </h2>
               <p className="mt-2 mb-0 text-xs leading-5 text-[#62736d]">{catalog.ui.entIntro}</p>
@@ -409,11 +444,11 @@ export default function ResultExperience({ locale }: { locale: Locale }) {
           </div>
         </section>
 
-        <section className="mt-8" aria-labelledby="plan-title">
+        <section className="mt-8" aria-labelledby={planTitleId}>
           <div className="mb-4 max-w-2xl">
             <h2
               className="m-0 text-xl font-[820] tracking-[-0.02em] text-[#172033]"
-              id="plan-title">
+              id={planTitleId}>
               {catalog.ui.planTitle}
             </h2>
             <p className="mt-2 mb-0 text-xs leading-5 text-[#68717c]">{catalog.ui.planIntro}</p>
@@ -444,15 +479,16 @@ export default function ResultExperience({ locale }: { locale: Locale }) {
           <p className="m-0 max-w-3xl text-center text-[10px] leading-5 text-[#626b73]">
             {catalog.ui.disclaimer}
           </p>
-          <Link
-            className="result-primary-link mt-4 shrink-0 sm:mt-0"
-            href={`/${locale}`}
-            onClick={clearQuestionnaireStorage}>
-            {catalog.ui.newAttempt}
-          </Link>
+          {showNewAttempt ? (
+            <Link
+              className="result-primary-link mt-4 shrink-0 sm:mt-0"
+              href={`/${locale}`}
+              onClick={clearQuestionnaireStorage}>
+              {catalog.ui.newAttempt}
+            </Link>
+          ) : null}
         </footer>
       </div>
-    </main>
   );
 }
 
@@ -487,14 +523,18 @@ function OverviewItem({
 function ReportDetails({
   title,
   hint,
+  initiallyOpen,
   children,
 }: {
   title: string;
   hint: string;
+  initiallyOpen: boolean;
   children: React.ReactNode;
 }) {
   return (
-    <details className="mb-3 overflow-hidden rounded-xl border border-[#d9ddda] bg-white open:shadow-[0_12px_36px_rgba(23,32,51,0.06)]">
+    <details
+      className="mb-3 overflow-hidden rounded-xl border border-[#d9ddda] bg-white open:shadow-[0_12px_36px_rgba(23,32,51,0.06)]"
+      open={initiallyOpen}>
       <summary className="cursor-pointer px-4 py-4 marker:text-[#5c9f8e] focus-visible:outline-2 focus-visible:outline-offset-[-3px] focus-visible:outline-[#6d55a0] sm:px-5">
         <span className="ml-1 inline-flex max-w-[calc(100%_-_24px)] flex-col align-middle sm:flex-row sm:items-baseline sm:gap-3">
           <span className="text-sm font-[800] text-[#172033]">{title}</span>

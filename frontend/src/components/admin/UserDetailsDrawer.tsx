@@ -1,17 +1,9 @@
 'use client';
 
 import { Clock3, LoaderCircle, X } from 'lucide-react';
-import { ADMIN_STATUS_LABELS, MODULE_LABELS, SCORING_OPTIONS } from '@/data/questionnaire';
+import { ADMIN_STATUS_LABELS } from '@/data/questionnaire';
 import type { AdminUser, AdminUserDetails } from '@/lib/admin-types';
-
-const answerLabels = [
-  '',
-  'Совсем не согласен / совсем не подходит',
-  'Скорее не согласен / скорее не подходит',
-  'Нейтрально / не уверен',
-  'Скорее согласен / скорее подходит',
-  'Полностью согласен / полностью подходит',
-];
+import { QuestionnaireResultReport } from '@/components/questionnaire/ResultExperience';
 
 function date(value: string | null) {
   return value
@@ -20,10 +12,6 @@ function date(value: string | null) {
         timeStyle: 'short',
       }).format(new Date(value))
     : '—';
-}
-
-function resultName(module: 'TEAM_ROLES' | 'RIASEC', code: string) {
-  return SCORING_OPTIONS[module].find((item) => item.value === code)?.label ?? code;
 }
 
 export default function UserDetailsDrawer({
@@ -46,7 +34,7 @@ export default function UserDetailsDrawer({
       aria-modal="true"
       aria-label={`Попытки пользователя ${user.fullName}`}>
       <button className="absolute inset-0 cursor-default" type="button" aria-label="Закрыть" onClick={onClose} />
-      <section className="relative h-full w-full max-w-2xl overflow-y-auto bg-[#f4f4ef] shadow-[-20px_0_70px_rgba(20,29,44,0.2)]">
+      <section className="relative h-full w-full max-w-5xl overflow-y-auto bg-[#f4f4ef] shadow-[-20px_0_70px_rgba(20,29,44,0.2)]">
         <header className="sticky top-0 z-10 flex items-start justify-between gap-4 border-b border-[#dedfd9] bg-[rgba(244,244,239,0.96)] p-5 backdrop-blur sm:p-7">
           <div>
             <p className="m-0 text-[10px] font-extrabold tracking-[0.08em] text-[#868c95] uppercase">Карточка ученика</p>
@@ -74,24 +62,21 @@ export default function UserDetailsDrawer({
                   </span>
                 </div>
 
-                {attempt.result ? <div className="grid gap-3 border-b border-[#e8e9e5] bg-[#fafaf7] p-4 sm:grid-cols-3 sm:p-5">
-                  <div className="rounded-xl bg-white p-3"><span className="text-[9px] font-extrabold tracking-[0.07em] text-[#969ba3] uppercase">MBTI</span><p className="mt-1 mb-0 text-xl font-[850] tracking-[0.08em] text-[#172033]">{attempt.result.mbti.type}</p></div>
-                  <div className="rounded-xl bg-white p-3"><span className="text-[9px] font-extrabold tracking-[0.07em] text-[#969ba3] uppercase">RIASEC</span><p className="mt-1 mb-0 text-xl font-[850] tracking-[0.08em] text-[#172033]">{attempt.result.riasec.code}</p></div>
-                  <div className="rounded-xl bg-white p-3"><span className="text-[9px] font-extrabold tracking-[0.07em] text-[#969ba3] uppercase">Главная роль</span><p className="mt-1 mb-0 text-xs leading-5 font-bold text-[#172033]">{resultName('TEAM_ROLES', attempt.result.teamRoles[0]?.code ?? '')}</p></div>
-                </div> : null}
-
-                <details className="group">
-                  <summary className="flex cursor-pointer list-none items-center justify-between p-4 text-xs font-bold text-[#505865] sm:px-5">Ответы · {attempt.answers.length}<span className="text-lg transition-transform group-open:rotate-45">+</span></summary>
-                  <div className="divide-y divide-[#ecece8] border-t border-[#ecece8]">
-                    {attempt.answers.map((answer) => (
-                      <div className="p-4 sm:px-5" key={answer.id}>
-                        <div className="mb-1 flex items-center gap-2"><span className="rounded-full bg-[#f0edf8] px-2 py-0.5 text-[8px] font-extrabold text-[#5e4b79]">{MODULE_LABELS[answer.question.module]}</span><span className="text-[9px] font-bold text-[#9a9fa7]">#{answer.question.sortOrder}</span></div>
-                        <p className="m-0 text-xs leading-5 font-semibold text-[#353e4d]">{answer.question.textRu}</p>
-                        <p className="mt-1.5 mb-0 text-[11px] font-bold text-[#347663]">{answer.value}/5 · {answerLabels[answer.value]}</p>
-                      </div>
-                    ))}
+                {attempt.result ? (
+                  <div className="bg-[#f4f4ef] px-3 py-6 sm:px-5 sm:py-8">
+                    <QuestionnaireResultReport
+                      locale="ru"
+                      result={attempt.result}
+                      showNewAttempt={false}
+                      expandDetails
+                      idPrefix={`admin-attempt-${attempt.id}`}
+                    />
                   </div>
-                </details>
+                ) : (
+                  <p className="m-0 bg-[#fafaf7] p-5 text-xs font-semibold text-[#7d838c]">
+                    Персональный результат появится после завершения теста.
+                  </p>
+                )}
               </article>
             ))}
           </div>
