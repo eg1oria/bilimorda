@@ -16,8 +16,8 @@ Production рассчитан на один Ubuntu/Debian VPS:
 
 До получения сертификата создайте DNS-записи:
 
-- `A` для `bilimorda.kz` на IPv4 сервера;
-- `A` для `www.bilimorda.kz` на тот же IPv4;
+- `A` для `bilimorda.ink` на IPv4 сервера;
+- `A` для `www.bilimorda.ink` на тот же IPv4;
 - `AAAA` добавляйте только при реально настроенном IPv6.
 
 Откройте только SSH, HTTP и HTTPS. Для UFW:
@@ -88,7 +88,7 @@ openssl rand -hex 32
 Запишите две разные полученные строки в `.env`:
 
 ```dotenv
-SITE_URL=https://bilimorda.kz
+SITE_URL=https://bilimorda.ink
 ADMIN_API_KEY=<первая строка>
 ADMIN_ROUTE_TOKEN=<вторая строка>
 BACKUP_DIR=/var/backups/bilimorda
@@ -97,7 +97,7 @@ BACKUP_RETENTION_DAYS=30
 
 Файл `.env` нельзя коммитить, копировать в тикеты или отправлять в сообщения.
 Админка будет доступна по адресу
-`https://bilimorda.kz/manage/<ADMIN_ROUTE_TOKEN>`.
+`https://bilimorda.ink/manage/<ADMIN_ROUTE_TOKEN>`.
 
 Проверьте итоговую конфигурацию и соберите все образы:
 
@@ -119,6 +119,9 @@ curl --fail --silent --show-error http://127.0.0.1:3000/api/health
 
 ```bash
 sudo install -m 0644 \
+  /opt/bilimorda/deploy/nginx/server-names-hash.conf \
+  /etc/nginx/conf.d/bilimorda-server-names-hash.conf
+sudo install -m 0644 \
   /opt/bilimorda/deploy/nginx/bilimorda.bootstrap.conf \
   /etc/nginx/sites-available/bilimorda.conf
 sudo ln -s /etc/nginx/sites-available/bilimorda.conf \
@@ -138,8 +141,8 @@ sudo systemctl reload nginx
 sudo certbot certonly \
   --webroot \
   --webroot-path /var/www/certbot \
-  -d bilimorda.kz \
-  -d www.bilimorda.kz
+  -d bilimorda.ink \
+  -d www.bilimorda.ink
 ```
 
 После успешного выпуска включите финальный HTTPS-конфиг:
@@ -150,6 +153,10 @@ sudo install -m 0644 \
   /etc/nginx/sites-available/bilimorda.conf
 sudo nginx -t
 sudo systemctl reload nginx
+sudo install -d -m 0755 /etc/letsencrypt/renewal-hooks/deploy
+sudo install -m 0755 \
+  /opt/bilimorda/deploy/certbot/reload-nginx.sh \
+  /etc/letsencrypt/renewal-hooks/deploy/bilimorda-reload-nginx
 sudo systemctl enable --now certbot.timer
 sudo certbot renew --dry-run
 ```
@@ -157,12 +164,12 @@ sudo certbot renew --dry-run
 Проверьте внешний контур:
 
 ```bash
-curl --fail --silent --show-error https://bilimorda.kz/api/health
-curl --head https://www.bilimorda.kz/
-curl --head http://bilimorda.kz/
+curl --fail --silent --show-error https://bilimorda.ink/api/health
+curl --head https://www.bilimorda.ink/
+curl --head http://bilimorda.ink/
 ```
 
-Оба последних запроса должны перенаправлять на `https://bilimorda.kz/`.
+Оба последних запроса должны перенаправлять на `https://bilimorda.ink/`.
 
 ## 5. Ежедневные backup-копии
 
@@ -211,7 +218,7 @@ sudo docker compose --profile maintenance build --pull
 sudo docker compose up -d --remove-orphans
 sudo docker compose ps
 curl --fail --silent --show-error http://127.0.0.1:3000/api/health
-curl --fail --silent --show-error https://bilimorda.kz/api/health
+curl --fail --silent --show-error https://bilimorda.ink/api/health
 sudo docker compose logs --tail=100 backend frontend
 ```
 

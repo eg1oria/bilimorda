@@ -67,6 +67,7 @@ services:
       - frontend_cache:/app/.next/cache
     networks:
       - app
+      - proxy
     tmpfs:
       - /tmp:size=64m,mode=1777
     healthcheck:
@@ -111,6 +112,7 @@ services:
 networks:
   app:
     internal: true
+  proxy:
 
 volumes:
   backend_data:
